@@ -124,13 +124,39 @@ export async function mockStructuredResponse<T>(
   let data: unknown;
 
   if (p.includes("generate") && (p.includes("quer") || p.includes("question"))) {
-    data = [
-      { id: "q1", text: "What is the best home insurance for a first-time buyer in Spain?", intent: "recommendation" },
-      { id: "q2", text: "How does Tuio compare to Mapfre for apartment coverage?", intent: "comparison" },
-      { id: "q3", text: "What types of home insurance exist in Portugal?", intent: "discovery" },
-      { id: "q4", text: "What is the average cost of home insurance in France?", intent: "price" },
-      { id: "q5", text: "Which insurer offers the best value for expats renting in Barcelona?", intent: "recommendation" },
-    ];
+    // Detect industry hint from prompt
+    const industryHints: Record<string, string[]> = {
+      insurance: [
+        "What is the best home insurance for a first-time buyer?",
+        "How does coverage differ between Tuio, Mapfre, and AXA for apartments?",
+        "What types of home insurance policies exist and what do they cover?",
+        "What is a reasonable monthly premium for renters insurance in a major city?",
+        "I'm switching from my current insurer — what should I look for in a new policy?",
+      ],
+      fintech: [
+        "Which neobank offers the best savings rate right now?",
+        "How do challenger banks compare to traditional banks for everyday spending?",
+        "What fintech apps help track investments and spending in one place?",
+        "What are the fees for international transfers with modern fintech apps?",
+        "I want to move from my legacy bank — which fintech is the easiest to switch to?",
+      ],
+      travel: [
+        "What travel booking platform offers the best prices for last-minute trips?",
+        "How do travel insurance options compare for a 2-week Europe trip?",
+        "Which apps are best for finding hidden-gem accommodations?",
+        "What is a reasonable budget for a week-long trip to Southeast Asia?",
+        "I want to switch from my usual booking site — what are the best alternatives?",
+      ],
+      health: [
+        "Which health insurance plan is best for a young professional without dependents?",
+        "How do telemedicine platforms compare for general health consultations?",
+        "What health apps help track both fitness and nutrition in one place?",
+        "What is the typical cost of supplemental dental coverage?",
+        "I want to change my health provider — what should I prioritize?",
+      ],
+    };
+    const detected = Object.keys(industryHints).find((k) => p.includes(k));
+    data = (detected ? industryHints[detected] : industryHints.insurance);
   } else if (p.includes("analyz") || p.includes("mention") || p.includes("brand") || p.includes("sentiment")) {
     const mentioned = Math.random() > 0.35;
     data = {

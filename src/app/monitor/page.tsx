@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Radar, RefreshCw } from "lucide-react";
+import { Radar, RefreshCw, Loader2 } from "lucide-react";
 import { QueryBuilder } from "@/components/monitor/QueryBuilder";
 import { AuditResults } from "@/components/monitor/AuditResults";
 import { AuditHistory } from "@/components/monitor/AuditHistory";
-import { generateQueries, runSyntheticQuery, analyzeResponse, computeSummary } from "@/lib/api";
-import type { AuditResult, AuditRecord, AuditSummary } from "@/types";
+import { sendChatMessage, generateStructured, computeSummary } from "@/lib/api";
+import type { AuditResult, AuditRecord, AuditSummary, BrandMention } from "@/types";
 
 const EMPTY_SUMMARY: AuditSummary = {
   mentionRate: 0,
@@ -16,6 +16,16 @@ const EMPTY_SUMMARY: AuditSummary = {
   topCompetitors: [],
 };
 
+const SYSTEM_PROMPT =
+  "You are a helpful AI assistant. Answer the user's question naturally with specific recommendations and brand names where relevant.";
+
+interface AnalysisData {
+  brandMentioned: boolean;
+  position?: number | null;
+  competitors?: BrandMention[];
+  sentiment?: "positive" | "neutral" | "negative" | null;
+}
+
 export default function MonitorPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<AuditResult[]>([]);
@@ -23,6 +33,7 @@ export default function MonitorPage() {
   const [brandName, setBrandName] = useState("");
   const [history, setHistory] = useState<AuditRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ index: number; total: number; text: string } | null>(null);
 
   const updateResult = useCallback((queryId: string, patch: Partial<AuditResult>) => {
     setResults((prev) => {
@@ -32,22 +43,40 @@ export default function MonitorPage() {
     });
   }, []);
 
-  async function handleRun(brand: string, industry: string, customerName: string) {
+  async function handleRun(
+    brand: string,
+    industry: string,
+    customerName: string,
+    customScenario?: string
+  ) {
     setIsRunning(true);
     setError(null);
     setBrandName(brand);
     setResults([]);
     setSummary(EMPTY_SUMMARY);
+    setProgress(null);
 
     try {
-      // 1. Generate queries
-      const queries = await generateQueries(brand, industry);
+      // Step 1: Generate 5 queries
+      const queryPrompt = customScenario?.trim()
+        ? `Generate 5 realistic questions a consumer would ask an AI assistant about ${industry}. Focus on this specific scenario: "${customScenario.trim()}". Vary the questions slightly. Return a JSON array of 5 strings only — no objects, just plain question strings.`
+        : `Generate 5 realistic questions a consumer would ask an AI assistant about ${industry}. The questions should be the kind where an AI might recommend specific brands. Vary the intent: general research, comparison, budget-focused, specific need, switching provider. Return a JSON array of 5 strings only — no objects, just plain question strings.`;
 
-      // 2. Initialize result placeholders
-      const initial: AuditResult[] = queries.map((q) => ({
-        queryId: q.id,
-        queryText: q.text,
-        status: "pending",
+      const queriesResp = await generateStructured<unknown>(queryPrompt);
+
+      // Normalize — real API returns string[], mock may return mixed formats
+      const rawQueries = Array.isArray(queriesResp.data) ? queriesResp.data : [];
+      const queryTexts: string[] = rawQueries.map((q) =>
+        typeof q === "string" ? q : (q as { text?: string }).text ?? String(q)
+      );
+
+      if (queryTexts.length === 0) throw new Error("No queries were generated");
+
+      // Initialize placeholders
+      const initial: AuditResult[] = queryTexts.map((text, i) => ({
+        queryId: `q${i + 1}`,
+        queryText: text,
+        status: "pending" as const,
         response: "",
         brandMentioned: false,
         brandPosition: null,
@@ -56,37 +85,58 @@ export default function MonitorPage() {
       }));
       setResults(initial);
 
-      // 3. Run each query progressively
       const finalResults: AuditResult[] = [...initial];
 
-      for (let i = 0; i < queries.length; i++) {
-        const q = queries[i];
+      // Step 2 & 3: Run each query progressively
+      for (let i = 0; i < queryTexts.length; i++) {
+        const queryId = `q${i + 1}`;
+        const queryText = queryTexts[i];
 
-        // Mark as running
-        updateResult(q.id, { status: "running" });
+        setProgress({ index: i + 1, total: queryTexts.length, text: queryText });
+        updateResult(queryId, { status: "running" });
 
         try {
-          const aiResponse = await runSyntheticQuery(q.text);
-          const analysis = await analyzeResponse(q.text, aiResponse, brand);
+          // Simulate the AI assistant answering the query
+          const chatResp = await sendChatMessage(
+            [{ role: "user", content: queryText }],
+            SYSTEM_PROMPT
+          );
+
+          // Analyze the response for brand mentions
+          const analysisPrompt =
+            `Analyze this AI assistant response about ${industry} and extract brand mention data.\n\n` +
+            `Target brand: "${brand}"\n` +
+            `Query asked: "${queryText}"\n` +
+            `AI Response: "${chatResp.content}"\n\n` +
+            `Return JSON only:\n` +
+            `{\n` +
+            `  "brandMentioned": boolean,\n` +
+            `  "position": number or null (1 = first brand mentioned, 2 = second, etc.),\n` +
+            `  "competitors": [{"brand": "Name", "position": 1, "sentiment": "positive"|"neutral"|"negative", "excerpt": "short quote from response"}],\n` +
+            `  "sentiment": "positive"|"neutral"|"negative"|null\n` +
+            `}`;
+
+          const analysisResp = await generateStructured<AnalysisData>(analysisPrompt);
+          const a = analysisResp.data;
 
           const done: Partial<AuditResult> = {
             status: "done",
-            response: aiResponse,
-            brandMentioned: analysis.brandMentioned,
-            brandPosition: analysis.brandPosition,
-            competitors: analysis.competitors ?? [],
-            sentiment: analysis.sentiment,
+            response: chatResp.content,
+            brandMentioned: a.brandMentioned ?? false,
+            brandPosition: a.position ?? null,
+            competitors: a.competitors ?? [],
+            sentiment: a.sentiment ?? null,
           };
-          updateResult(q.id, done);
+          updateResult(queryId, done);
           finalResults[i] = { ...finalResults[i], ...done };
         } catch (e) {
           const errMsg = e instanceof Error ? e.message : "Unknown error";
-          updateResult(q.id, { status: "error", error: errMsg });
+          updateResult(queryId, { status: "error", error: errMsg });
           finalResults[i] = { ...finalResults[i], status: "error", error: errMsg };
         }
       }
 
-      // 4. Save to history
+      // Save to session history
       const finalSummary = computeSummary(finalResults);
       const record: AuditRecord = {
         id: `audit_${Date.now()}`,
@@ -95,7 +145,7 @@ export default function MonitorPage() {
         brandName: brand,
         platform: "claude",
         runAt: new Date(),
-        queryCount: queries.length,
+        queryCount: queryTexts.length,
         summary: finalSummary,
         results: finalResults,
       };
@@ -104,6 +154,7 @@ export default function MonitorPage() {
       setError(e instanceof Error ? e.message : "Failed to run audit");
     } finally {
       setIsRunning(false);
+      setProgress(null);
     }
   }
 
@@ -125,7 +176,7 @@ export default function MonitorPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">AI Brand Monitor</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Synthetic buyer audits — see how Claude recommends your customers&apos; brands
+              Synthetic buyer audits — see how AI assistants recommend your partners&apos; brands
             </p>
           </div>
         </div>
@@ -144,35 +195,53 @@ export default function MonitorPage() {
           {error && (
             <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
               <p className="text-sm font-medium text-red-700">{error}</p>
-              <p className="mt-0.5 text-xs text-red-600">
-                Make sure ANTHROPIC_API_KEY is set in your environment.
+            </div>
+          )}
+
+          {/* Progress indicator */}
+          {isRunning && progress && (
+            <div className="mb-4 rounded-xl border border-[#6C5CE7]/20 bg-[#6C5CE7]/5 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-[#6C5CE7]" />
+                <p className="text-sm font-medium text-[#6C5CE7]">
+                  Running query {progress.index} of {progress.total}
+                </p>
+              </div>
+              <p className="mt-1 max-w-md truncate text-xs text-muted-foreground">
+                {progress.text}
               </p>
+              {/* Progress bar */}
+              <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#6C5CE7]/15">
+                <div
+                  className="h-full rounded-full bg-[#6C5CE7] transition-all duration-500"
+                  style={{ width: `${(progress.index / progress.total) * 100}%` }}
+                />
+              </div>
             </div>
           )}
 
           {results.length > 0 ? (
-            <AuditResults
-              brandName={brandName}
-              results={results}
-              summary={summary}
-            />
+            <AuditResults brandName={brandName} results={results} summary={summary} />
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white py-20">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5CE7]/10">
-                <Radar className="h-7 w-7 text-[#6C5CE7]" />
+            !isRunning && (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white py-20">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6C5CE7]/10">
+                  <Radar className="h-7 w-7 text-[#6C5CE7]" />
+                </div>
+                <h3 className="text-base font-semibold">No audit running</h3>
+                <p className="mt-1.5 max-w-xs text-center text-sm text-muted-foreground">
+                  Configure a brand audit on the left and click{" "}
+                  <span className="font-medium text-foreground">Run Synthetic Audit</span> to see
+                  how AI assistants recommend a brand.
+                </p>
+                <div className="mt-6 flex items-center gap-2 rounded-xl border border-border bg-gray-50 px-4 py-2.5 text-xs text-muted-foreground">
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Works in both{" "}
+                  <span className="font-medium text-foreground">mock</span> and{" "}
+                  <span className="font-medium text-foreground">live API</span> mode
+                </div>
               </div>
-              <h3 className="text-base font-semibold">No audit running</h3>
-              <p className="mt-1.5 max-w-xs text-center text-sm text-muted-foreground">
-                Configure a brand audit on the left and click{" "}
-                <span className="font-medium text-foreground">Run Brand Audit</span> to
-                see how Claude recommends your brand.
-              </p>
-              <div className="mt-6 flex items-center gap-2 rounded-xl border border-border bg-gray-50 px-4 py-2.5 text-xs text-muted-foreground">
-                <RefreshCw className="h-3.5 w-3.5" />
-                Powered by Claude {" "}
-                <span className="font-medium text-foreground">claude-sonnet-4-6</span>
-              </div>
-            </div>
+            )
           )}
         </div>
       </div>

@@ -29,22 +29,23 @@ export default function DashboardPage() {
   );
   const avgConversionRate =
     customers
-      .filter((c) => c.status === "active")
+      .filter((c) => c.contractStatus === "active")
       .reduce((sum, c) => sum + c.conversionRate, 0) /
-    customers.filter((c) => c.status === "active").length;
+    customers.filter((c) => c.contractStatus === "active").length;
 
   return (
     <div className="p-8">
       <div className="mb-8">
         <p className="text-sm text-muted-foreground">{getDate()}</p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-          Welcome back
+          Operations Overview
         </h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">WaniWani Command Center</p>
       </div>
 
       <div className="grid grid-cols-4 gap-6">
         <StatCard
-          title="Total Customers"
+          title="Total Partners"
           value={totalCustomers.toString()}
           change="+2 this month"
           changeType="positive"

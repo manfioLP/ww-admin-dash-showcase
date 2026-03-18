@@ -98,7 +98,7 @@ export function QueryBuilder({ onRun, isRunning }: Props) {
                     Industry: {selectedCustomer.vertical}
                   </span>
                   <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-muted-foreground">
-                    Status: {selectedCustomer.status}
+                    Status: {selectedCustomer.contractStatus}
                   </span>
                 </div>
               )}

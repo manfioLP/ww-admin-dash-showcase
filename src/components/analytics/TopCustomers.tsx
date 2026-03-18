@@ -52,7 +52,7 @@ export function TopCustomers({ dateRange, customerId }: FilterProps) {
       customerId !== "all"
         ? customers.filter((c) => c.id === customerId)
         : [...customers]
-            .filter((c) => c.status !== "onboarding")
+            .filter((c) => c.contractStatus !== "onboarding")
             .sort((a, b) => b.totalConversations - a.totalConversations)
             .slice(0, 5);
 
@@ -68,14 +68,14 @@ export function TopCustomers({ dateRange, customerId }: FilterProps) {
     <Card className="border-border/50">
       <CardContent className="p-0">
         <div className="border-b border-border px-6 py-5">
-          <h3 className="text-sm font-semibold">Top Customers</h3>
+          <h3 className="text-sm font-semibold">Top Partners</h3>
           <p className="text-xs text-muted-foreground mt-0.5">Ranked by conversation volume</p>
         </div>
 
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-border bg-gray-50/60">
-              {["#", "Customer", "Conversations", "Conv. Rate", "Revenue", "Trend"].map((h) => (
+              {["#", "Partner", "Conversations", "Conv. Rate", "Revenue", "Trend"].map((h) => (
                 <th
                   key={h}
                   className="px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-muted-foreground"

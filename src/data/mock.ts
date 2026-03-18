@@ -3,13 +3,14 @@ export type Customer = {
   name: string;
   logo: string;
   vertical: "insurance" | "fintech" | "travel" | "health";
-  status: "active" | "onboarding" | "churned";
-  plan: "starter" | "growth" | "enterprise";
+  contractStatus: "active" | "pilot" | "onboarding" | "churned";
   platforms: ("chatgpt" | "claude" | "gemini")[];
   totalConversations: number;
   conversions: number;
   conversionRate: number;
-  joinedAt: string;
+  partnerSince: string;
+  accountOwner: string;
+  notes: string;
 };
 
 export type Agent = {
@@ -35,10 +36,11 @@ export type DailyConversation = {
 export type Activity = {
   id: string;
   type:
-    | "customer_onboarded"
+    | "partner_onboarded"
     | "agent_deployed"
     | "conversion"
-    | "agent_error";
+    | "agent_alert"
+    | "audit_completed";
   message: string;
   timestamp: string;
   customerId: string;
@@ -50,130 +52,140 @@ export const customers: Customer[] = [
     name: "Tuio",
     logo: "🏠",
     vertical: "insurance",
-    status: "active",
-    plan: "enterprise",
+    contractStatus: "active",
     platforms: ["chatgpt", "claude"],
     totalConversations: 34200,
     conversions: 1890,
     conversionRate: 5.53,
-    joinedAt: "2025-06-15",
+    partnerSince: "2025-06-15",
+    accountOwner: "Ana Costa",
+    notes: "Flagship insurance partner. Expanding to pet insurance Q2. Strong NPS on Claude channel.",
   },
   {
     id: "cust_02",
     name: "Insurify",
     logo: "🛡️",
     vertical: "insurance",
-    status: "active",
-    plan: "growth",
+    contractStatus: "active",
     platforms: ["chatgpt", "claude", "gemini"],
     totalConversations: 28750,
     conversions: 1437,
     conversionRate: 5.0,
-    joinedAt: "2025-08-22",
+    partnerSince: "2025-08-22",
+    accountOwner: "Ana Costa",
+    notes: "First partner on all 3 platforms. Gemini agent in testing — awaiting approval from their compliance team.",
   },
   {
     id: "cust_03",
     name: "CoverBot",
     logo: "🤖",
     vertical: "insurance",
-    status: "active",
-    plan: "enterprise",
+    contractStatus: "active",
     platforms: ["claude", "gemini"],
     totalConversations: 19600,
     conversions: 980,
     conversionRate: 5.0,
-    joinedAt: "2025-09-10",
+    partnerSince: "2025-09-10",
+    accountOwner: "Marcus Klein",
+    notes: "API integration requires custom webhook setup. Life agent had 3 failed calls last week — Marcus investigating.",
   },
   {
     id: "cust_04",
     name: "SafeNest",
     logo: "🏡",
     vertical: "insurance",
-    status: "onboarding",
-    plan: "starter",
+    contractStatus: "onboarding",
     platforms: ["chatgpt"],
     totalConversations: 1200,
     conversions: 48,
     conversionRate: 4.0,
-    joinedAt: "2026-02-01",
+    partnerSince: "2026-02-01",
+    accountOwner: "Ana Costa",
+    notes: "Waiting on API credentials from their side. Agent submitted for approval. Target go-live: end of March.",
   },
   {
     id: "cust_05",
     name: "PolicyPal",
     logo: "📋",
     vertical: "insurance",
-    status: "active",
-    plan: "growth",
+    contractStatus: "active",
     platforms: ["chatgpt", "gemini"],
     totalConversations: 15300,
     conversions: 765,
     conversionRate: 5.0,
-    joinedAt: "2025-11-05",
+    partnerSince: "2025-11-05",
+    accountOwner: "Ana Costa",
+    notes: "Considering adding Claude channel. Renewal discussion scheduled for April.",
   },
   {
     id: "cust_06",
     name: "NeoBank",
     logo: "💳",
     vertical: "fintech",
-    status: "active",
-    plan: "enterprise",
+    contractStatus: "active",
     platforms: ["chatgpt", "claude", "gemini"],
     totalConversations: 42100,
     conversions: 2526,
     conversionRate: 6.0,
-    joinedAt: "2025-05-20",
+    partnerSince: "2025-05-20",
+    accountOwner: "James Park",
+    notes: "Highest-volume partner. Monthly business reviews with their CTO. Exploring WaniWani Pro tier.",
   },
   {
     id: "cust_07",
     name: "TripWise",
     logo: "✈️",
     vertical: "travel",
-    status: "active",
-    plan: "growth",
+    contractStatus: "active",
     platforms: ["chatgpt", "claude"],
     totalConversations: 11800,
     conversions: 590,
     conversionRate: 5.0,
-    joinedAt: "2025-12-12",
+    partnerSince: "2025-12-12",
+    accountOwner: "Sofia Chen",
+    notes: "Seasonal traffic spikes in summer. Requesting dynamic prompt switching by destination region.",
   },
   {
     id: "cust_08",
     name: "MediAssist",
     logo: "🏥",
     vertical: "health",
-    status: "churned",
-    plan: "starter",
+    contractStatus: "churned",
     platforms: ["gemini"],
     totalConversations: 3400,
     conversions: 102,
     conversionRate: 3.0,
-    joinedAt: "2025-07-30",
+    partnerSince: "2025-07-30",
+    accountOwner: "Sofia Chen",
+    notes: "Churned in Feb 2026 — regulatory concerns around AI in medical contexts. Keep on watchlist for re-engagement.",
   },
   {
     id: "cust_09",
     name: "FinFlow",
     logo: "📊",
     vertical: "fintech",
-    status: "active",
-    plan: "growth",
+    contractStatus: "active",
     platforms: ["claude", "gemini"],
     totalConversations: 18900,
     conversions: 945,
     conversionRate: 5.0,
-    joinedAt: "2025-10-18",
+    partnerSince: "2025-10-18",
+    accountOwner: "James Park",
+    notes: "Strong Claude performance. Investment product agent needs compliance review before Gemini expansion.",
   },
   {
     id: "cust_10",
     name: "VoyageAI",
     logo: "🌍",
     vertical: "travel",
-    status: "onboarding",
-    plan: "starter",
+    contractStatus: "onboarding",
     platforms: ["chatgpt"],
     totalConversations: 850,
     conversions: 25,
     conversionRate: 2.94,
-    joinedAt: "2026-03-01",
+    partnerSince: "2026-03-01",
+    accountOwner: "Sofia Chen",
+    notes: "Pilot partner — evaluating fit before full contract. First synthetic buyer audit scheduled for next week.",
   },
 ];
 
@@ -233,30 +245,28 @@ export type VisibilityScore = {
   gemini: number | null;
 };
 
-// Synthetic buyer audit scores (0-100) per customer × platform.
-// null = customer not deployed on that platform.
 export const visibilityScores: VisibilityScore[] = [
-  { customerId: "cust_01", chatgpt: 78, claude: 65, gemini: null },   // Tuio: chatgpt + claude
-  { customerId: "cust_02", chatgpt: 82, claude: 71, gemini: 59 },    // Insurify: all platforms
-  { customerId: "cust_03", chatgpt: null, claude: 67, gemini: 44 },  // CoverBot: claude + gemini
-  { customerId: "cust_04", chatgpt: 23, claude: null, gemini: null }, // SafeNest: chatgpt (onboarding)
-  { customerId: "cust_05", chatgpt: 74, claude: null, gemini: 61 },  // PolicyPal: chatgpt + gemini
-  { customerId: "cust_06", chatgpt: 88, claude: 79, gemini: 72 },    // NeoBank: all platforms
-  { customerId: "cust_07", chatgpt: 71, claude: 58, gemini: null },  // TripWise: chatgpt + claude
-  { customerId: "cust_08", chatgpt: null, claude: null, gemini: 19 },// MediAssist: gemini (churned)
-  { customerId: "cust_09", chatgpt: null, claude: 76, gemini: 63 },  // FinFlow: claude + gemini
-  { customerId: "cust_10", chatgpt: 12, claude: null, gemini: null }, // VoyageAI: chatgpt (onboarding)
+  { customerId: "cust_01", chatgpt: 78, claude: 65, gemini: null },
+  { customerId: "cust_02", chatgpt: 82, claude: 71, gemini: 59 },
+  { customerId: "cust_03", chatgpt: null, claude: 67, gemini: 44 },
+  { customerId: "cust_04", chatgpt: 23, claude: null, gemini: null },
+  { customerId: "cust_05", chatgpt: 74, claude: null, gemini: 61 },
+  { customerId: "cust_06", chatgpt: 88, claude: 79, gemini: 72 },
+  { customerId: "cust_07", chatgpt: 71, claude: 58, gemini: null },
+  { customerId: "cust_08", chatgpt: null, claude: null, gemini: 19 },
+  { customerId: "cust_09", chatgpt: null, claude: 76, gemini: 63 },
+  { customerId: "cust_10", chatgpt: 12, claude: null, gemini: null },
 ];
 
 export const recentActivity: Activity[] = [
-  { id: "act_01", type: "customer_onboarded", message: "VoyageAI completed onboarding setup", timestamp: "2026-03-18T09:15:00Z", customerId: "cust_10" },
-  { id: "act_02", type: "agent_deployed", message: "SafeNest Starter agent submitted for approval", timestamp: "2026-03-18T08:42:00Z", customerId: "cust_04" },
-  { id: "act_03", type: "conversion", message: "Tuio Home Quote generated 12 new conversions", timestamp: "2026-03-18T07:30:00Z", customerId: "cust_01" },
-  { id: "act_04", type: "agent_error", message: "MediAssist Triage agent reported timeout errors", timestamp: "2026-03-17T22:10:00Z", customerId: "cust_08" },
-  { id: "act_05", type: "conversion", message: "NeoBank Advisor reached 1,000+ monthly conversions", timestamp: "2026-03-17T18:45:00Z", customerId: "cust_06" },
-  { id: "act_06", type: "agent_deployed", message: "Insurify Gemini agent moved to testing", timestamp: "2026-03-17T14:20:00Z", customerId: "cust_02" },
-  { id: "act_07", type: "conversion", message: "FinFlow Invest hit 540 total conversions", timestamp: "2026-03-17T11:05:00Z", customerId: "cust_09" },
-  { id: "act_08", type: "customer_onboarded", message: "SafeNest joined the platform on Starter plan", timestamp: "2026-03-16T16:30:00Z", customerId: "cust_04" },
-  { id: "act_09", type: "agent_error", message: "CoverBot Life agent had 3 failed API calls", timestamp: "2026-03-16T10:15:00Z", customerId: "cust_03" },
-  { id: "act_10", type: "agent_deployed", message: "PolicyPal Gemini agent went live", timestamp: "2026-03-15T20:00:00Z", customerId: "cust_05" },
+  { id: "act_01", type: "partner_onboarded", message: "VoyageAI onboarded by Sofia Chen — pilot contract signed", timestamp: "2026-03-18T09:15:00Z", customerId: "cust_10" },
+  { id: "act_02", type: "agent_deployed", message: "SafeNest Starter agent submitted for approval on ChatGPT", timestamp: "2026-03-18T08:42:00Z", customerId: "cust_04" },
+  { id: "act_03", type: "conversion", message: "Tuio Home Quote generated 12 new conversions this morning", timestamp: "2026-03-18T07:30:00Z", customerId: "cust_01" },
+  { id: "act_04", type: "agent_alert", message: "CoverBot Life agent on Gemini — conversion drop detected (−18%)", timestamp: "2026-03-17T22:10:00Z", customerId: "cust_03" },
+  { id: "act_05", type: "conversion", message: "NeoBank Advisor reached 1,000+ monthly conversions milestone", timestamp: "2026-03-17T18:45:00Z", customerId: "cust_06" },
+  { id: "act_06", type: "audit_completed", message: "Synthetic audit completed for Insurify — visibility score: 82 on ChatGPT", timestamp: "2026-03-17T14:20:00Z", customerId: "cust_02" },
+  { id: "act_07", type: "agent_deployed", message: "FinFlow Invest agent deployed to Claude by Marcus Klein", timestamp: "2026-03-17T11:05:00Z", customerId: "cust_09" },
+  { id: "act_08", type: "audit_completed", message: "Synthetic audit completed for SafeNest — visibility score: 23 on ChatGPT", timestamp: "2026-03-16T16:30:00Z", customerId: "cust_04" },
+  { id: "act_09", type: "agent_alert", message: "MediAssist Triage agent on Gemini — 3 consecutive API timeout errors", timestamp: "2026-03-16T10:15:00Z", customerId: "cust_08" },
+  { id: "act_10", type: "partner_onboarded", message: "SafeNest onboarded by Ana Costa — insurance vertical", timestamp: "2026-03-15T20:00:00Z", customerId: "cust_04" },
 ];

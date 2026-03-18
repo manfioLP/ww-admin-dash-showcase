@@ -11,6 +11,14 @@ const PLATFORMS: { value: Platform; label: string; color: string }[] = [
   { value: "gemini", label: "Gemini", color: "#4285f4" },
 ];
 
+const TEAM_MEMBERS = [
+  "Ana Costa",
+  "Sofia Chen",
+  "Marcus Klein",
+  "James Park",
+  "Raphael Vullierme",
+];
+
 const inputCls =
   "w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-[#6C5CE7] focus:ring-2 focus:ring-[#6C5CE7]/10 transition-all";
 
@@ -23,8 +31,9 @@ export function AddCustomerModal({
 }) {
   const [name, setName] = useState("");
   const [vertical, setVertical] = useState("insurance");
-  const [plan, setPlan] = useState("starter");
   const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [accountOwner, setAccountOwner] = useState(TEAM_MEMBERS[0]);
+  const [notes, setNotes] = useState("");
 
   function togglePlatform(p: Platform) {
     setPlatforms((prev) =>
@@ -32,12 +41,13 @@ export function AddCustomerModal({
     );
   }
 
-  function handleSave() {
+  function handleOnboard() {
     onClose();
     setName("");
     setVertical("insurance");
-    setPlan("starter");
     setPlatforms([]);
+    setAccountOwner(TEAM_MEMBERS[0]);
+    setNotes("");
   }
 
   if (!isOpen) return null;
@@ -50,7 +60,7 @@ export function AddCustomerModal({
       />
       <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="text-base font-semibold">Add Customer</h2>
+          <h2 className="text-base font-semibold">Onboard Partner</h2>
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 text-muted-foreground hover:bg-gray-100 hover:text-foreground transition-colors"
@@ -87,15 +97,15 @@ export function AddCustomerModal({
               </select>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium">Plan</label>
+              <label className="mb-1.5 block text-sm font-medium">Account Owner</label>
               <select
-                value={plan}
-                onChange={(e) => setPlan(e.target.value)}
+                value={accountOwner}
+                onChange={(e) => setAccountOwner(e.target.value)}
                 className={inputCls}
               >
-                <option value="starter">Starter</option>
-                <option value="growth">Growth</option>
-                <option value="enterprise">Enterprise</option>
+                {TEAM_MEMBERS.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -126,6 +136,20 @@ export function AddCustomerModal({
               })}
             </div>
           </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium">
+              Internal Notes{" "}
+              <span className="font-normal text-muted-foreground">(optional)</span>
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Pilot contract, expanding to pet insurance Q2…"
+              rows={3}
+              className={`${inputCls} resize-none`}
+            />
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 border-t border-border px-6 py-4">
@@ -136,11 +160,11 @@ export function AddCustomerModal({
             Cancel
           </button>
           <button
-            onClick={handleSave}
+            onClick={handleOnboard}
             disabled={!name.trim() || platforms.length === 0}
             className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white hover:bg-[#5a4bd1] disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
           >
-            Add Customer
+            Onboard
           </button>
         </div>
       </div>

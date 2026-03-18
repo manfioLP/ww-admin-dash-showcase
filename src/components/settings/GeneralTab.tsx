@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const TIMEZONES = [
@@ -24,6 +24,7 @@ const inputCls =
 export function GeneralTab() {
   const [orgName, setOrgName] = useState("WaniWani");
   const [timezone, setTimezone] = useState("America/New_York (EST/EDT)");
+  const [defaultModel, setDefaultModel] = useState("gpt-4o");
   const [saved, setSaved] = useState(false);
 
   function handleSave() {
@@ -46,27 +47,24 @@ export function GeneralTab() {
                 className={inputCls}
               />
               <p className="mt-1.5 text-xs text-muted-foreground">
-                Appears in reports, emails, and invoices sent to your customers.
+                Appears in internal reports and partner-facing communications.
               </p>
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium">Organization Logo</label>
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-border bg-gray-50 text-3xl">
-                  🐊
-                </div>
-                <div>
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-foreground hover:bg-gray-50 transition-colors">
-                    <Upload className="h-3.5 w-3.5" />
-                    Upload new logo
-                    <input type="file" className="hidden" accept="image/*" />
-                  </label>
-                  <p className="mt-1.5 text-xs text-muted-foreground">
-                    PNG, JPG or SVG — 512×512px recommended
-                  </p>
-                </div>
-              </div>
+              <label className="mb-1.5 block text-sm font-medium">Default Model</label>
+              <select
+                value={defaultModel}
+                onChange={(e) => setDefaultModel(e.target.value)}
+                className={inputCls}
+              >
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="claude-sonnet">Claude Sonnet</option>
+                <option value="gemini-pro">Gemini Pro</option>
+              </select>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Pre-selected when configuring new agents. Can be overridden per agent.
+              </p>
             </div>
 
             <div>

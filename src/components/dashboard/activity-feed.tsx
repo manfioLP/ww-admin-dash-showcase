@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { recentActivity, type Activity } from "@/data/mock";
-import { UserPlus, Rocket, TrendingUp, AlertTriangle } from "lucide-react";
+import { UserPlus, Rocket, TrendingUp, AlertTriangle, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const activityConfig: Record<
   Activity["type"],
   { icon: typeof UserPlus; color: string; bg: string }
 > = {
-  customer_onboarded: {
+  partner_onboarded: {
     icon: UserPlus,
     color: "text-blue-600",
     bg: "bg-blue-50",
@@ -22,10 +22,15 @@ const activityConfig: Record<
     color: "text-emerald-600",
     bg: "bg-emerald-50",
   },
-  agent_error: {
+  agent_alert: {
     icon: AlertTriangle,
     color: "text-amber-600",
     bg: "bg-amber-50",
+  },
+  audit_completed: {
+    icon: Search,
+    color: "text-purple-600",
+    bg: "bg-purple-50",
   },
 };
 

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Bot, BarChart3, Radar, Settings, X } from "lucide-react";
+import { LayoutDashboard, Building2, Bot, BarChart3, Radar, Settings, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/customers", label: "Customers", icon: Users },
+  { href: "/partners", label: "Partners", icon: Building2 },
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/monitor", label: "Brand Monitor", icon: Radar },

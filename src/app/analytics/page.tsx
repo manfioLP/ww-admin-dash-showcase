@@ -32,7 +32,7 @@ export default function AnalyticsPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Performance insights across customers, agents, and platforms
+            Performance insights across partners, agents, and platforms
           </p>
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function AnalyticsPage() {
           onChange={(e) => setCustomerId(e.target.value)}
           className={selectCls}
         >
-          <option value="all">All Customers</option>
+          <option value="all">All Partners</option>
           {customers.map((c) => (
             <option key={c.id} value={c.id}>
               {c.logo} {c.name}

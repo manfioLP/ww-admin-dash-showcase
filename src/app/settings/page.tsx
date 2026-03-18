@@ -3,17 +3,13 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { GeneralTab } from "@/components/settings/GeneralTab";
-import { ApiKeysTab } from "@/components/settings/ApiKeysTab";
 import { TeamTab } from "@/components/settings/TeamTab";
-import { BillingTab } from "@/components/settings/BillingTab";
 
-type Tab = "general" | "api-keys" | "team" | "billing";
+type Tab = "general" | "team";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "general", label: "General" },
-  { key: "api-keys", label: "API Keys" },
   { key: "team", label: "Team" },
-  { key: "billing", label: "Billing" },
 ];
 
 export default function SettingsPage() {
@@ -24,7 +20,7 @@ export default function SettingsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage your organization, team, and billing preferences
+          Manage organization preferences and team
         </p>
       </div>
 
@@ -46,9 +42,7 @@ export default function SettingsPage() {
       </div>
 
       {tab === "general" && <GeneralTab />}
-      {tab === "api-keys" && <ApiKeysTab />}
       {tab === "team" && <TeamTab />}
-      {tab === "billing" && <BillingTab />}
     </div>
   );
 }

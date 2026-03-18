@@ -1,4 +1,4 @@
-import { MessageSquare, TrendingUp, Bot, Calendar, Tag, Building2, Mail, Phone } from "lucide-react";
+import { MessageSquare, TrendingUp, Bot, Calendar, Building2, Mail, Phone, User, StickyNote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { type Customer, type Agent } from "@/data/mock";
 import { cn } from "@/lib/utils";
@@ -42,7 +42,6 @@ function KpiCard({
   );
 }
 
-// Mock contact data per customer
 const MOCK_CONTACTS: Record<string, { name: string; email: string; phone: string }> = {
   cust_01: { name: "Sophie Martin", email: "sophie@tuio.com", phone: "+1 (415) 555-0192" },
   cust_02: { name: "James Chen", email: "james@insurify.com", phone: "+1 (628) 555-0183" },
@@ -148,20 +147,20 @@ export function CustomerOverview({
 
         <Card className="border-border/50">
           <CardContent className="p-6">
-            <h3 className="mb-4 text-sm font-semibold">Customer Info</h3>
+            <h3 className="mb-4 text-sm font-semibold">Partner Info</h3>
             <dl className="space-y-3.5">
-              <InfoRow icon={Calendar} label="Joined">
-                {new Date(customer.joinedAt).toLocaleDateString("en-US", {
+              <InfoRow icon={Calendar} label="Partner Since">
+                {new Date(customer.partnerSince).toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",
                   year: "numeric",
                 })}
               </InfoRow>
-              <InfoRow icon={Tag} label="Plan">
-                <span className="capitalize">{customer.plan}</span>
-              </InfoRow>
               <InfoRow icon={Building2} label="Vertical">
                 <span className="capitalize">{customer.vertical}</span>
+              </InfoRow>
+              <InfoRow icon={User} label="Account Owner">
+                {customer.accountOwner}
               </InfoRow>
               <div className="my-1 border-t border-border/50" />
               <InfoRow icon={Mail} label="Contact">
@@ -176,6 +175,21 @@ export function CustomerOverview({
           </CardContent>
         </Card>
       </div>
+
+      {/* Internal Notes */}
+      {customer.notes && (
+        <Card className="border-amber-200/60 bg-amber-50/30">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-3">
+              <StickyNote className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-amber-700">Internal Notes</p>
+                <p className="text-sm leading-relaxed text-foreground">{customer.notes}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

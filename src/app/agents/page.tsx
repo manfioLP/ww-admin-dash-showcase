@@ -35,7 +35,7 @@ export default function AgentsPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Agents</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {agents.length} agents deployed · {liveCount} live
+            AI agents managed by WaniWani across all partner platforms · {liveCount} live
           </p>
         </div>
         <button
@@ -43,7 +43,7 @@ export default function AgentsPage() {
           className="inline-flex items-center gap-2 rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#5a4bd1] transition-colors"
         >
           <Plus className="h-4 w-4" />
-          Create Agent
+          Configure New Agent
         </button>
       </div>
 

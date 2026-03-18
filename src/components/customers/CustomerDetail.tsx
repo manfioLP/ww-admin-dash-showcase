@@ -13,14 +13,9 @@ type Tab = "overview" | "agents" | "analytics";
 
 const STATUS_CONFIG = {
   active: { label: "Active", dot: "#10b981", bg: "#10b98112", text: "#059669" },
+  pilot: { label: "Pilot", dot: "#8b5cf6", bg: "#8b5cf612", text: "#7c3aed" },
   onboarding: { label: "Onboarding", dot: "#3b82f6", bg: "#3b82f612", text: "#2563eb" },
   churned: { label: "Churned", dot: "#ef4444", bg: "#ef444412", text: "#dc2626" },
-};
-
-const PLAN_STYLES = {
-  starter: "bg-gray-100 text-gray-600",
-  growth: "bg-blue-50 text-blue-700",
-  enterprise: "bg-purple-50 text-[#6C5CE7]",
 };
 
 export function CustomerDetail({
@@ -32,16 +27,16 @@ export function CustomerDetail({
 }) {
   const [tab, setTab] = useState<Tab>("overview");
 
-  const status = STATUS_CONFIG[customer.status];
+  const status = STATUS_CONFIG[customer.contractStatus];
 
   return (
     <div className="p-8">
       <Link
-        href="/customers"
+        href="/partners"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
-        Customers
+        Partners
       </Link>
 
       <div className="mb-6 flex items-center gap-4">
@@ -49,7 +44,7 @@ export function CustomerDetail({
           {customer.logo}
         </div>
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-semibold tracking-tight">{customer.name}</h1>
             <span
               className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
@@ -58,20 +53,12 @@ export function CustomerDetail({
               <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: status.dot }} />
               {status.label}
             </span>
-            <span
-              className={cn(
-                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                PLAN_STYLES[customer.plan]
-              )}
-            >
-              {customer.plan}
-            </span>
             <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium capitalize text-gray-600">
               {customer.vertical}
             </span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {customer.id} · Joined {new Date(customer.joinedAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+            {customer.id} · Account owner: {customer.accountOwner} · Partner since {new Date(customer.partnerSince).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
           </p>
         </div>
       </div>

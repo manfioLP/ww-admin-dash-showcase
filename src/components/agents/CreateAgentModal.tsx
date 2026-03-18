@@ -34,7 +34,7 @@ export function CreateAgentModal({
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="text-base font-semibold">Create Agent</h2>
+          <h2 className="text-base font-semibold">Configure New Agent</h2>
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 text-muted-foreground hover:bg-gray-100 hover:text-foreground transition-colors"
@@ -57,13 +57,13 @@ export function CreateAgentModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium">Customer</label>
+            <label className="mb-1.5 block text-sm font-medium">Partner</label>
             <select
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
               className={inputCls}
             >
-              <option value="">Select a customer…</option>
+              <option value="">Select a partner…</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.logo} {c.name}
@@ -108,7 +108,7 @@ export function CreateAgentModal({
             disabled={!name.trim() || !customerId}
             className="rounded-lg bg-[#6C5CE7] px-4 py-2 text-sm font-medium text-white hover:bg-[#5a4bd1] disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
           >
-            Create Agent
+            Configure
           </button>
         </div>
       </div>

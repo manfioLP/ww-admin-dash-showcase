@@ -82,7 +82,7 @@ export function BrandVisibility({ customerId, platform }: FilterProps) {
     const filtered =
       customerId !== "all"
         ? customers.filter((c) => c.id === customerId)
-        : customers.filter((c) => c.status !== "onboarding").slice(0, 8);
+        : customers.filter((c) => c.contractStatus !== "onboarding").slice(0, 8);
 
     const visiblePlatforms = PLATFORMS.filter(
       (p) => platform === "all" || platform === p.key

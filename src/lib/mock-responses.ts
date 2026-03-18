@@ -176,8 +176,9 @@ export async function mockStructuredResponse<T>(
     const stages = ["discovery", "recommendation", "quote", "conversion", "objection_handling"] as const;
     data = {
       stage: stages[Math.floor(Math.random() * stages.length)],
-      productsMentioned: pickBrands(Math.floor(Math.random() * 2) + 1),
-      quoteProvided: Math.random() > 0.6,
+      products_mentioned: pickBrands(Math.floor(Math.random() * 2) + 1),
+      quote_provided: Math.random() > 0.6,
+      conversion_probability: Math.random() * 0.6 + 0.1,
     };
   } else {
     data = { result: "mock response", prompt };

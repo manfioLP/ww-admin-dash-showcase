@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { RotateCcw, Download, Bot } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { RotateCcw, Download, Bot, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
@@ -70,6 +70,7 @@ export function ChatWindow({
   lastUserMessage,
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -85,7 +86,8 @@ export function ChatWindow({
       .join("\n\n");
     const full = `Playground Export — ${agentName}\n${new Date().toLocaleString()}\n${"─".repeat(60)}\n\n${text}`;
     navigator.clipboard.writeText(full).catch(() => {});
-    // Visual feedback via brief alert-less approach — just log
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -124,9 +126,21 @@ export function ChatWindow({
             <button
               onClick={handleExport}
               title="Export conversation"
-              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-gray-100 hover:text-foreground"
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-all",
+                copied
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "text-muted-foreground hover:bg-gray-100 hover:text-foreground"
+              )}
             >
-              <Download className="h-4 w-4" />
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  Copied
+                </>
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
             </button>
           )}
 

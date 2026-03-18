@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { sendChatMessage, generateStructured } from "@/lib/api";
+import type { ChatMessage as ApiChatMessage } from "@/types";
 
 export type ChatMessage = {
   id: string;
@@ -14,19 +16,26 @@ export type ConversationAnalysis = {
   stage: "discovery" | "recommendation" | "quote" | "conversion" | "objection_handling";
   products_mentioned: string[];
   quote_provided: boolean;
-  conversion_probability: number;
+  conversion_probability: number; // 0–1
 };
 
 type UseChatOptions = {
   systemPrompt: string;
+  onMessageComplete?: (messages: ChatMessage[]) => void;
 };
 
-export function useChat({ systemPrompt }: UseChatOptions) {
+// Cap history sent to API to avoid token limit issues
+const MAX_HISTORY = 20;
+
+export function useChat({ systemPrompt, onMessageComplete }: UseChatOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [analysis, setAnalysis] = useState<ConversationAnalysis | null>(null);
+
+  // Use refs so callbacks always see latest values without stale closures
   const systemPromptRef = useRef(systemPrompt);
   systemPromptRef.current = systemPrompt;
+  const messagesRef = useRef<ChatMessage[]>([]);
 
   const sendMessage = useCallback(async (content: string) => {
     const userMsg: ChatMessage = {
@@ -36,80 +45,67 @@ export function useChat({ systemPrompt }: UseChatOptions) {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    // Update ref and state together
+    const withUser = [...messagesRef.current, userMsg];
+    messagesRef.current = withUser;
+    setMessages(withUser);
     setIsLoading(true);
 
     try {
-      const history = await new Promise<ChatMessage[]>((resolve) => {
-        setMessages((prev) => {
-          resolve(prev);
-          return prev;
-        });
-      });
+      // Build API-compatible messages, capped at last MAX_HISTORY, skipping error messages
+      const apiMessages: ApiChatMessage[] = withUser
+        .slice(-MAX_HISTORY)
+        .filter((m) => !m.isError)
+        .map((m) => ({ role: m.role, content: m.content }));
 
-      const apiMessages = history.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const response = await sendChatMessage(apiMessages, systemPromptRef.current);
 
-      const res = await fetch("/api/playground", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "chat",
-          systemPrompt: systemPromptRef.current,
-          messages: apiMessages,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        throw new Error(err.error ?? `HTTP ${res.status}`);
-      }
-
-      const data = await res.json();
       const assistantMsg: ChatMessage = {
         id: `msg_${Date.now()}_a`,
         role: "assistant",
-        content: data.content,
+        content: response.content,
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMsg]);
+      const withAssistant = [...messagesRef.current, assistantMsg];
+      messagesRef.current = withAssistant;
+      setMessages(withAssistant);
 
-      // Async analysis — non-blocking
-      const allMessages = [...history, assistantMsg];
-      fetch("/api/playground", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "analyze",
-          systemPrompt: systemPromptRef.current,
-          messages: allMessages.map((m) => ({ role: m.role, content: m.content })),
-        }),
-      })
-        .then((r) => r.json())
-        .then((analyticsData) => {
-          if (analyticsData && !analyticsData.error) {
-            setAnalysis(analyticsData as ConversationAnalysis);
-          }
+      onMessageComplete?.(withAssistant);
+
+      // Fire-and-forget: classify conversation stage
+      const last6 = withAssistant.slice(-6);
+      const convoSummary = last6
+        .map((m) => `${m.role === "user" ? "User" : "Agent"}: ${m.content.slice(0, 200)}`)
+        .join("\n");
+
+      generateStructured<ConversationAnalysis>(
+        `Classify this insurance sales conversation.\n\nRecent messages:\n${convoSummary}\n\n` +
+          `Return JSON only: {"stage":"discovery"|"recommendation"|"quote"|"conversion"|"objection_handling","products_mentioned":string[],"quote_provided":boolean,"conversion_probability":number}`
+      )
+        .then((result) => {
+          if (result?.data) setAnalysis(result.data);
         })
         .catch(() => {/* silent */});
     } catch (err) {
       const errorMsg: ChatMessage = {
         id: `msg_${Date.now()}_err`,
         role: "assistant",
-        content: err instanceof Error ? err.message : "Something went wrong. Please try again.",
+        content:
+          err instanceof Error ? err.message : "Something went wrong. Please try again.",
         timestamp: new Date(),
         isError: true,
       };
-      setMessages((prev) => [...prev, errorMsg]);
+      const withError = [...messagesRef.current, errorMsg];
+      messagesRef.current = withError;
+      setMessages(withError);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [onMessageComplete]);
 
   const resetConversation = useCallback(() => {
+    messagesRef.current = [];
     setMessages([]);
     setAnalysis(null);
     setIsLoading(false);

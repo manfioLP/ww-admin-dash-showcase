@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { type Agent } from "@/data/mock";
 
-const SYSTEM_PROMPTS: Record<string, string> = {
+export const SYSTEM_PROMPTS: Record<string, string> = {
   insurance: `You are an AI-powered insurance quoting assistant. Your goal is to help customers discover the right coverage for their needs.
 
 When a user shows interest, you should:
@@ -56,16 +56,17 @@ const inputCls =
 export function ModelConfig({
   agent,
   vertical,
+  systemPrompt,
+  onSystemPromptChange,
 }: {
   agent: Agent;
   vertical: string;
+  systemPrompt: string;
+  onSystemPromptChange: (prompt: string) => void;
 }) {
   const [model, setModel] = useState(agent.model);
   const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(1024);
-  const [prompt, setPrompt] = useState(
-    SYSTEM_PROMPTS[vertical] ?? SYSTEM_PROMPTS.insurance
-  );
   const [saved, setSaved] = useState(false);
 
   function handleSave() {
@@ -145,8 +146,8 @@ export function ModelConfig({
               System Prompt
             </label>
             <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              value={systemPrompt}
+              onChange={(e) => onSystemPromptChange(e.target.value)}
               rows={9}
               className={`${inputCls} resize-none font-mono text-xs leading-relaxed`}
             />

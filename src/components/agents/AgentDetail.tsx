@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FlaskConical } from "lucide-react";
 import { type Agent, type Customer } from "@/data/mock";
-import { ModelConfig } from "./ModelConfig";
+import { ModelConfig, SYSTEM_PROMPTS } from "./ModelConfig";
 import { ProductCatalog } from "./ProductCatalog";
 import { Deployment } from "./Deployment";
 import { AgentPerformance } from "./AgentPerformance";
+import { PlaygroundPanel } from "@/components/playground/PlaygroundPanel";
 
 const MODEL_CONFIG = {
   "gpt-4o": { label: "GPT-4o", color: "#10a37f", bg: "#10a37f12" },
@@ -37,59 +39,89 @@ export function AgentDetail({
   const platform = PLATFORM_CONFIG[agent.platform];
   const status = STATUS_CONFIG[agent.status];
 
+  const [systemPrompt, setSystemPrompt] = useState(
+    SYSTEM_PROMPTS[customer.vertical] ?? SYSTEM_PROMPTS.insurance
+  );
+  const [playgroundOpen, setPlaygroundOpen] = useState(false);
+
   return (
-    <div className="p-8">
-      <Link
-        href="/agents"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Agents
-      </Link>
+    <>
+      <div className="p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <Link
+            href="/agents"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Agents
+          </Link>
 
-      <div className="mb-8 flex items-center gap-4">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border/60 bg-white shadow-sm text-xl">
-          {customer.logo}
+          <button
+            onClick={() => setPlaygroundOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#6C5CE7] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#5a4bd1] shadow-sm"
+          >
+            <FlaskConical className="h-4 w-4" />
+            Test Agent
+          </button>
         </div>
-        <div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-2xl font-semibold tracking-tight">{agent.name}</h1>
-            <span
-              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
-              style={{ color: status.text, backgroundColor: status.bg }}
-            >
-              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: status.dot }} />
-              {status.label}
-            </span>
-            <span
-              className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-              style={{ color: model.color, backgroundColor: model.bg }}
-            >
-              {model.label}
-            </span>
-            <span
-              className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-              style={{ color: platform.color, backgroundColor: platform.bg }}
-            >
-              {platform.label}
-            </span>
+
+        <div className="mb-8 flex items-center gap-4">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border/60 bg-white shadow-sm text-xl">
+            {customer.logo}
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {customer.logo} {customer.name} · {agent.id}
-          </p>
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl font-semibold tracking-tight">{agent.name}</h1>
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
+                style={{ color: status.text, backgroundColor: status.bg }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: status.dot }} />
+                {status.label}
+              </span>
+              <span
+                className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                style={{ color: model.color, backgroundColor: model.bg }}
+              >
+                {model.label}
+              </span>
+              <span
+                className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                style={{ color: platform.color, backgroundColor: platform.bg }}
+              >
+                {platform.label}
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {customer.logo} {customer.name} · {agent.id}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-5 gap-6">
+          <div className="col-span-3 space-y-6">
+            <ModelConfig
+              agent={agent}
+              vertical={customer.vertical}
+              systemPrompt={systemPrompt}
+              onSystemPromptChange={setSystemPrompt}
+            />
+            <ProductCatalog vertical={customer.vertical} />
+            <Deployment agent={agent} />
+          </div>
+          <div className="col-span-2">
+            <AgentPerformance agent={agent} customer={customer} />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-6">
-        <div className="col-span-3 space-y-6">
-          <ModelConfig agent={agent} vertical={customer.vertical} />
-          <ProductCatalog vertical={customer.vertical} />
-          <Deployment agent={agent} />
-        </div>
-        <div className="col-span-2">
-          <AgentPerformance agent={agent} customer={customer} />
-        </div>
-      </div>
-    </div>
+      <PlaygroundPanel
+        agent={agent}
+        customer={customer}
+        systemPrompt={systemPrompt}
+        isOpen={playgroundOpen}
+        onClose={() => setPlaygroundOpen(false)}
+      />
+    </>
   );
 }

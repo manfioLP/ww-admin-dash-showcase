@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Bot, BarChart3, Settings, X } from "lucide-react";
+import { LayoutDashboard, Users, Bot, BarChart3, Radar, Settings, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/customers", label: "Customers", icon: Users },
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/monitor", label: "Brand Monitor", icon: Radar },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

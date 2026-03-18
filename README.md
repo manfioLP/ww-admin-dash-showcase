@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WaniWani Admin Dashboard
 
-## Getting Started
+Internal admin dashboard for [WaniWani](https://waniwani.ai) — an AI distribution infrastructure company that helps businesses sell products inside AI assistants (ChatGPT, Claude, Gemini).
 
-First, run the development server:
+This dashboard is used by WaniWani's team to manage customers, configure AI agents, and monitor performance analytics.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+> **Showcase project** — all data is mocked. Focus is on production-grade UI quality and AI-aware product thinking.
+
+---
+
+## Screenshot
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  🐊 WaniWani   │  Dashboard                             │
+│                │                                         │
+│  Dashboard     │  Welcome back            Mar 18, 2026  │
+│  Customers     │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ │
+│  Agents        │  │ 10   │ │ 14   │ │175K  │ │ 5.2% │ │
+│  Analytics     │  │Custs │ │Agnts │ │Convs │ │Conv  │ │
+│  Settings      │  └──────┘ └──────┘ └──────┘ └──────┘ │
+│                │                                         │
+│  WaniWani©2026 │  [Conversations Chart]  [Platform Dist]│
+│  v1.0.0        │                                         │
+└─────────────────────────────────────────────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript (strict) |
+| Styling | Tailwind CSS v4 + shadcn/ui |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Fonts | DM Sans (Google Fonts) |
+| Package Manager | pnpm |
+| Deployment | Vercel |
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Dashboard** — KPI cards, 30-day conversation trends, platform distribution, activity feed
+- **Customers** — searchable/filterable table, customer detail with Overview / Agents / Analytics tabs
+- **Agents** — responsive card grid with filters, agent configuration (model selector, temperature slider, system prompt, product catalog, deploy/pause toggle)
+- **Analytics** — animated conversion funnel, platform comparison chart (grouped bars, metric toggle), top customers table, AI Brand Visibility heatmap (synthetic buyer audit scores), conversation quality metrics
+- **Settings** — General, API Keys, Team, Billing tabs with full interactivity
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# Install dependencies
+pnpm install
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx              # Root layout (DM Sans, LayoutShell)
+│   ├── page.tsx                # Dashboard home
+│   ├── customers/
+│   │   ├── page.tsx            # Customers list
+│   │   └── [id]/page.tsx       # Customer detail
+│   ├── agents/
+│   │   ├── page.tsx            # Agents grid
+│   │   └── [id]/page.tsx       # Agent detail / config
+│   ├── analytics/
+│   │   └── page.tsx            # Analytics dashboard
+│   └── settings/
+│       └── page.tsx            # Settings (4 tabs)
+│
+├── components/
+│   ├── layout/
+│   │   └── LayoutShell.tsx     # Client shell: sidebar + mobile header
+│   ├── sidebar.tsx             # Dark sidebar, active route, mobile drawer
+│   ├── dashboard/              # KPI cards, charts, activity feed
+│   ├── customers/              # CustomerTable, Detail, AddCustomerModal
+│   ├── agents/                 # AgentCard, Detail, config sub-components
+│   ├── analytics/              # FunnelChart, PlatformComparison, BrandVisibility…
+│   ├── settings/               # GeneralTab, ApiKeysTab, TeamTab, BillingTab
+│   ├── shared/
+│   │   ├── EmptyState.tsx      # Reusable empty state with optional CTA
+│   │   └── Skeleton.tsx        # Loading skeleton primitives (card, table, chart)
+│   └── ui/                     # shadcn primitives: Card, Badge, Button
+│
+├── data/
+│   └── mock.ts                 # All mock data: customers, agents, scores, activity
+│
+└── lib/
+    └── utils.ts                # cn() Tailwind merge helper
+```
+
+---
+
+## Design System
+
+| Token | Value |
+|---|---|
+| Primary accent | `#6C5CE7` (purple) |
+| Sidebar bg | `#0f0f1a` |
+| Page bg | `#f8f9fa` |
+| Card bg | `#ffffff` |
+| Success | `#10b981` |
+| Warning | `#f59e0b` |
+| Error | `#ef4444` |
+| ChatGPT | `#10a37f` |
+| Claude | `#d97706` |
+| Gemini | `#4285f4` |
+
+---
+
+## Key Concepts
+
+- **Synthetic Buyer** — AI persona deployed by WaniWani to audit how often a brand gets recommended by ChatGPT / Claude / Gemini. The Brand Visibility score (0–100) is the core WaniWani product insight.
+- **Funnel** — Conversations → Quotes Generated → Conversions
+- **Agent** — An LLM-powered experience configured for a customer, deployed on a target AI platform
+- **Visibility Score** — 0–100 metric from synthetic buyer audits showing how often an AI recommends a brand

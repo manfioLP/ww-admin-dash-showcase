@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { Sidebar } from "@/components/sidebar";
+import { DM_Sans } from "next/font/google";
+import { LayoutShell } from "@/components/layout/LayoutShell";
 import "./globals.css";
 
-const inter = Inter({
+const dmSans = DM_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -20,11 +21,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <Sidebar />
-        <main className="ml-60 min-h-screen bg-[#f8f9fa]">
-          {children}
-        </main>
+      <body className={`${dmSans.variable} font-sans antialiased`}>
+        <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
   );

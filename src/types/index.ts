@@ -1,3 +1,51 @@
+// ─── AI / Chat types ──────────────────────────────────────────────────────────
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: string;
+}
+
+export interface ChatResponse {
+  content: string;
+  model: string;
+  mock: boolean;
+  usage?: { input_tokens: number; output_tokens: number };
+}
+
+export interface StructuredResponse<T = unknown> {
+  data: T;
+  raw: string;
+  mock: boolean;
+}
+
+export interface BrandAuditQuery {
+  question: string;
+  response: string;
+  brandMentioned: boolean;
+  position: number | null;
+  competitors: string[];
+  sentiment: "positive" | "neutral" | "negative" | null;
+}
+
+export interface BrandAuditResult {
+  brand: string;
+  industry: string;
+  queries: BrandAuditQuery[];
+  mentionRate: number;
+  avgPosition: number | null;
+  competitorLandscape: Record<string, number>;
+  timestamp: string;
+}
+
+export interface ConversationStage {
+  stage: "discovery" | "recommendation" | "quote" | "conversion" | "objection_handling";
+  productsMentioned: string[];
+  quoteProvided: boolean;
+}
+
+// ─── Audit types (existing) ───────────────────────────────────────────────────
+
 export type AuditQuery = {
   id: string;
   text: string;

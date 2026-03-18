@@ -1,4 +1,83 @@
-import type { AuditQuery, AuditResult, AuditSummary } from "@/types";
+import type {
+  AuditQuery,
+  AuditResult,
+  AuditSummary,
+  ChatMessage,
+  ChatResponse,
+  StructuredResponse,
+} from "@/types";
+import { mockChatResponse, mockStructuredResponse } from "./mock-responses";
+
+// ─── Mode detection ───────────────────────────────────────────────────────────
+
+export function getApiMode(): "real" | "mock" {
+  if (process.env.NEXT_PUBLIC_API_MODE === "real") return "real";
+  return "mock";
+}
+
+// ─── Unified chat client ──────────────────────────────────────────────────────
+
+export async function sendChatMessage(
+  messages: ChatMessage[],
+  system?: string
+): Promise<ChatResponse> {
+  if (getApiMode() === "mock") {
+    return mockChatResponse(messages, system);
+  }
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages, system }),
+    });
+
+    const data = await res.json();
+
+    // Server returned mock:true (missing API key) → fall back silently
+    if (data.mock === true) {
+      return mockChatResponse(messages, system);
+    }
+
+    if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+    return data as ChatResponse;
+  } catch {
+    // Any network/parse failure → fall back to mock
+    return mockChatResponse(messages, system);
+  }
+}
+
+// ─── Unified structured generation client ─────────────────────────────────────
+
+export async function generateStructured<T>(
+  prompt: string,
+  system?: string
+): Promise<StructuredResponse<T>> {
+  if (getApiMode() === "mock") {
+    return mockStructuredResponse<T>(prompt);
+  }
+
+  try {
+    const res = await fetch("/api/chat/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, system }),
+    });
+
+    const data = await res.json();
+
+    if (data.mock === true) {
+      return mockStructuredResponse<T>(prompt);
+    }
+
+    if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+    return data as StructuredResponse<T>;
+  } catch {
+    return mockStructuredResponse<T>(prompt);
+  }
+}
+
+// ─── Monitor API helpers (existing) ──────────────────────────────────────────
 
 async function callMonitorApi(
   action: "generate_queries" | "run_query" | "analyze_response",
@@ -54,7 +133,10 @@ export function computeSummary(results: AuditResult[]): AuditSummary {
   const mentionRate = Math.round((mentioned.length / done.length) * 100);
 
   const positions = mentioned.map((r) => r.brandPosition).filter((p): p is number => p !== null);
-  const avgPosition = positions.length > 0 ? Math.round(positions.reduce((a, b) => a + b, 0) / positions.length * 10) / 10 : null;
+  const avgPosition =
+    positions.length > 0
+      ? Math.round((positions.reduce((a, b) => a + b, 0) / positions.length) * 10) / 10
+      : null;
 
   const competitorMap = new Map<string, number>();
   for (const r of done) {
@@ -69,7 +151,9 @@ export function computeSummary(results: AuditResult[]): AuditSummary {
 
   const sentimentValues = mentioned
     .map((r) => r.sentiment)
-    .map((s): number | null => (s === "positive" ? 100 : s === "neutral" ? 50 : s === "negative" ? 0 : null))
+    .map((s): number | null =>
+      s === "positive" ? 100 : s === "neutral" ? 50 : s === "negative" ? 0 : null
+    )
     .filter((v): v is number => v !== null);
   const sentimentScore =
     sentimentValues.length > 0

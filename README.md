@@ -69,6 +69,56 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
+## Environment & API Modes
+
+The dashboard supports two modes for AI-powered features (Agent Playground, Brand Monitor):
+
+| Mode | Behaviour |
+|---|---|
+| **Mock** (default) | Simulated responses, no API key needed, fully offline |
+| **Real** | Live Anthropic API calls via a server-side proxy |
+
+### Quick start (mock mode — no setup needed)
+
+```bash
+pnpm dev   # just works, indicator shows "Mock Mode"
+```
+
+### Enable live API
+
+Create `.env.local` (gitignored):
+
+```bash
+cp .env.example .env.local
+```
+
+Then edit `.env.local`:
+
+```env
+NEXT_PUBLIC_API_MODE=real
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+```
+
+Restart the dev server — the top-bar indicator will switch to **Live API**.
+
+### Fallback behaviour
+
+The app **never crashes** due to a missing or invalid API key:
+- `NEXT_PUBLIC_API_MODE=mock` → always mock
+- `NEXT_PUBLIC_API_MODE=real` but no key → silently falls back to mock
+- Real API call fails → silently falls back to mock
+
+### API routes
+
+| Route | Purpose |
+|---|---|
+| `POST /api/chat` | Proxy to Anthropic `/v1/messages` |
+| `POST /api/chat/generate` | Structured JSON generation with retry |
+| `POST /api/playground` | Agent Playground chat + conversation analysis |
+| `POST /api/monitor` | Brand Monitor query generation + analysis |
+
+---
+
 ## Project Structure
 
 ```

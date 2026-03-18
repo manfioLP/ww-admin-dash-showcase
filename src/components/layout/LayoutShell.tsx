@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
+import { ApiModeIndicator } from "@/components/shared/ApiModeIndicator";
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -24,9 +25,17 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
           <span className="text-xl">🐊</span>
           <span className="text-base font-semibold tracking-tight">WaniWani</span>
         </span>
+        <div className="ml-auto">
+          <ApiModeIndicator />
+        </div>
       </header>
 
-      <main className="min-h-screen bg-[#f8f9fa] pt-14 lg:ml-60 lg:pt-0">
+      {/* Desktop top bar */}
+      <header className="fixed right-0 top-0 z-20 hidden h-12 items-center justify-end border-b border-border/40 bg-[#f8f9fa] px-6 lg:ml-60 lg:flex" style={{ left: "240px" }}>
+        <ApiModeIndicator />
+      </header>
+
+      <main className="min-h-screen bg-[#f8f9fa] pt-14 lg:ml-60 lg:pt-12">
         {children}
       </main>
     </>

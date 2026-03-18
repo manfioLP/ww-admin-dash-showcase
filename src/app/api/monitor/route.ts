@@ -5,7 +5,7 @@ const MODEL = "claude-sonnet-4-6";
 
 async function callClaude(systemPrompt: string, userPrompt: string): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set");
+  if (!apiKey) throw new Error("API key not configured");
 
   const res = await fetch(ANTHROPIC_API_URL, {
     method: "POST",

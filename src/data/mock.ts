@@ -226,6 +226,28 @@ function generateDailyConversations(): DailyConversation[] {
 
 export const dailyConversations: DailyConversation[] = generateDailyConversations();
 
+export type VisibilityScore = {
+  customerId: string;
+  chatgpt: number | null;
+  claude: number | null;
+  gemini: number | null;
+};
+
+// Synthetic buyer audit scores (0-100) per customer × platform.
+// null = customer not deployed on that platform.
+export const visibilityScores: VisibilityScore[] = [
+  { customerId: "cust_01", chatgpt: 78, claude: 65, gemini: null },   // Tuio: chatgpt + claude
+  { customerId: "cust_02", chatgpt: 82, claude: 71, gemini: 59 },    // Insurify: all platforms
+  { customerId: "cust_03", chatgpt: null, claude: 67, gemini: 44 },  // CoverBot: claude + gemini
+  { customerId: "cust_04", chatgpt: 23, claude: null, gemini: null }, // SafeNest: chatgpt (onboarding)
+  { customerId: "cust_05", chatgpt: 74, claude: null, gemini: 61 },  // PolicyPal: chatgpt + gemini
+  { customerId: "cust_06", chatgpt: 88, claude: 79, gemini: 72 },    // NeoBank: all platforms
+  { customerId: "cust_07", chatgpt: 71, claude: 58, gemini: null },  // TripWise: chatgpt + claude
+  { customerId: "cust_08", chatgpt: null, claude: null, gemini: 19 },// MediAssist: gemini (churned)
+  { customerId: "cust_09", chatgpt: null, claude: 76, gemini: 63 },  // FinFlow: claude + gemini
+  { customerId: "cust_10", chatgpt: 12, claude: null, gemini: null }, // VoyageAI: chatgpt (onboarding)
+];
+
 export const recentActivity: Activity[] = [
   { id: "act_01", type: "customer_onboarded", message: "VoyageAI completed onboarding setup", timestamp: "2026-03-18T09:15:00Z", customerId: "cust_10" },
   { id: "act_02", type: "agent_deployed", message: "SafeNest Starter agent submitted for approval", timestamp: "2026-03-18T08:42:00Z", customerId: "cust_04" },
